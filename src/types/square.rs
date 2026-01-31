@@ -1,4 +1,6 @@
-use crate::types::Bitboard;
+use crate::types::{Bitboard, Dir};
+use std::str::FromStr;
+use thiserror::Error;
 
 #[derive(Copy, Clone, Eq, PartialEq, Default)]
 #[repr(u8)]
@@ -34,6 +36,11 @@ impl Square {
     }
 
     #[must_use]
+    pub const fn to_file_and_rank(self) -> (usize, usize) {
+        (self.to_index() % 6, self.to_index() / 6)
+    }
+
+    #[must_use]
     pub const fn to_index(self) -> usize {
         self as usize
     }
@@ -41,5 +48,61 @@ impl Square {
     #[must_use]
     pub const fn to_bitboard(self) -> Bitboard {
         Bitboard(1u64 << self as u64)
+    }
+
+    #[must_use]
+    pub fn step(self, dir: Dir) -> Square {
+        let (file, rank) = self.to_file_and_rank();
+        match dir {
+            Dir::North => Square::from_file_and_rank(file, rank + 1),
+            Dir::South => Square::from_file_and_rank(file, rank - 1),
+            Dir::East => Square::from_file_and_rank(file + 1, rank),
+            Dir::West => Square::from_file_and_rank(file - 1, rank),
+        }
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum SquareParseError {
+    #[error("invalid length of square specifier")]
+    InvalidLength,
+    #[error("invalid file in square specifier")]
+    InvalidFile,
+    #[error("invalid rank in square specifier")]
+    InvalidRank,
+}
+
+impl FromStr for Square {
+    type Err = SquareParseError;
+
+    fn from_str(s: &str) -> Result<Square, SquareParseError> {
+        let [file, rank] = s.as_bytes() else {
+            return Err(SquareParseError::InvalidLength);
+        };
+
+        let file = if (b'a'..=b'f').contains(file) {
+            file - b'a'
+        } else {
+            return Err(SquareParseError::InvalidFile);
+        };
+        let rank = if (b'1'..=b'6').contains(rank) {
+            rank - b'1'
+        } else {
+            return Err(SquareParseError::InvalidRank);
+        };
+
+        Ok(Square::from_file_and_rank(file as usize, rank as usize))
+    }
+}
+
+impl std::fmt::Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (file, rank) = self.to_file_and_rank();
+        write!(
+            f,
+            "{}{}",
+            (b'a' + file as u8) as char,
+            (b'1' + rank as u8) as char
+        )
     }
 }

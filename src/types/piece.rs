@@ -26,7 +26,7 @@ impl PieceType {
 
     #[must_use]
     pub const fn from_index(index: usize) -> PieceType {
-        debug_assert!(index < PieceType::NUM);
+        debug_assert!(index < Self::NUM);
         unsafe { std::mem::transmute(index as u8) }
     }
 
@@ -38,6 +38,11 @@ impl PieceType {
     #[must_use]
     pub const fn to_index(self) -> usize {
         self as usize
+    }
+
+    #[must_use]
+    pub fn some_or(self, or: PieceType) -> PieceType {
+        if self.is_some() { self } else { or }
     }
 }
 
@@ -55,13 +60,18 @@ impl Piece {
 
     #[must_use]
     pub const fn from_index(index: usize) -> Piece {
-        debug_assert!(index < Piece::NUM);
+        debug_assert!(index < Self::NUM);
         unsafe { std::mem::transmute(index as u8) }
     }
 
     #[must_use]
     pub const fn to_index(self) -> usize {
         self as usize
+    }
+
+    #[must_use]
+    pub fn is_some(&self) -> bool {
+        *self != Piece::None
     }
 
     #[must_use]

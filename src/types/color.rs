@@ -33,3 +33,11 @@ impl std::fmt::Display for Color {
         )
     }
 }
+
+impl std::ops::Not for Color {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Color::from_index((self.to_index() ^ 1) as u8)
+    }
+}
