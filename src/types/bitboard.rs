@@ -10,6 +10,25 @@ impl Bitboard {
     pub fn set(&mut self, sq: Square) {
         *self |= sq.to_bitboard();
     }
+
+    pub fn unset(&mut self, sq: Square) {
+        *self &= !sq.to_bitboard();
+    }
+
+    #[must_use]
+    pub fn get(self, sq: Square) -> bool {
+        (self & sq.to_bitboard()).is_some()
+    }
+
+    #[must_use]
+    pub fn is_some(self) -> bool {
+        self.0 != 0
+    }
+
+    #[must_use]
+    pub fn is_empty(self) -> bool {
+        self.0 == 0
+    }
 }
 
 impl std::ops::Not for Bitboard {

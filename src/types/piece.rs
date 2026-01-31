@@ -1,6 +1,6 @@
 use crate::types::Color;
 
-#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Default)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, Default)]
 pub enum PieceType {
     Flat,
     Wall,
@@ -9,7 +9,7 @@ pub enum PieceType {
     None,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Default)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, Default)]
 pub enum Piece {
     P1Flat,
     P2Flat,
@@ -42,7 +42,11 @@ impl PieceType {
 
     #[must_use]
     pub fn some_or(self, or: PieceType) -> PieceType {
-        if self.is_some() { self } else { or }
+        if self.is_some() {
+            self
+        } else {
+            or
+        }
     }
 }
 
@@ -82,5 +86,10 @@ impl Piece {
     #[must_use]
     pub fn piece_type(&self) -> PieceType {
         PieceType::from_index(self.to_index() >> 1)
+    }
+
+    #[must_use]
+    pub fn color(&self) -> Color {
+        Color::from_index((self.to_index() & 1) as u8)
     }
 }
