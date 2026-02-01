@@ -2,7 +2,7 @@ use crate::types::{Bitboard, Dir};
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Copy, Clone, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 #[repr(u8)]
 #[rustfmt::skip]
 pub enum Square {
@@ -37,7 +37,27 @@ impl Square {
 
     #[must_use]
     pub const fn to_file_and_rank(self) -> (usize, usize) {
-        (self.to_index() % 6, self.to_index() / 6)
+        (self.file(), self.rank())
+    }
+
+    #[must_use]
+    pub const fn file(self) -> usize {
+        self.to_index() % 6
+    }
+
+    #[must_use]
+    pub const fn rank(self) -> usize {
+        self.to_index() / 6
+    }
+
+    #[must_use]
+    pub fn is_none(self) -> bool {
+        self == Square::None
+    }
+
+    #[must_use]
+    pub fn is_some(self) -> bool {
+        self != Square::None
     }
 
     #[must_use]

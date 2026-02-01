@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::position::Position;
+use crate::{perft, position::Position};
 
 #[derive(Default)]
 pub struct Interface {
@@ -19,6 +19,7 @@ impl Interface {
         match cmd {
             "position" => self.parse_position(it),
             "moves" => self.parse_moves(it),
+            "perft" => self.parse_perft(it),
             _ => self.print_protocol_error(cmd, "Unknown command"),
         }
     }
@@ -71,11 +72,23 @@ impl Interface {
             match mstr.parse() {
                 Ok(mv) => {
                     self.position = self.position.make_move(mv);
+                    self.position.verify();
                 }
                 Err(err) => {
                     self.print_protocol_error("moves", &format!("invalid move string: {err}"));
                     return;
                 }
+            }
+        }
+    }
+
+    fn parse_perft<'a, I: Iterator<Item = &'a str>>(&mut self, mut it: I) {
+        let depth = it.next().unwrap_or("1");
+        match depth.parse() {
+            Ok(depth) => perft::splitperft(&self.position, depth),
+            Err(err) => {
+                self.print_protocol_error("perft", &format!("invalid depth argument: {err}"));
+                return;
             }
         }
     }

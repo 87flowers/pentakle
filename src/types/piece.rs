@@ -42,11 +42,7 @@ impl PieceType {
 
     #[must_use]
     pub fn some_or(self, or: PieceType) -> PieceType {
-        if self.is_some() {
-            self
-        } else {
-            or
-        }
+        if self.is_some() { self } else { or }
     }
 }
 

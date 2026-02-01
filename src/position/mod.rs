@@ -1,7 +1,10 @@
 use crate::types::{Bitboard, Color, Piece, PieceType, Square};
 
 mod make_move;
+mod movegen;
 mod tps;
+
+pub use movegen::MoveList;
 
 #[derive(Clone)]
 pub struct Position {
@@ -39,5 +42,25 @@ impl Position {
     #[must_use]
     pub fn is_empty(&self, sq: Square) -> bool {
         self.mailbox[sq.to_index()].is_none()
+    }
+
+    #[must_use]
+    pub fn occupied(&self) -> Bitboard {
+        self.colors[0] | self.colors[1]
+    }
+
+    #[must_use]
+    pub fn piece_on(&self, sq: Square) -> Piece {
+        self.mailbox[sq.to_index()]
+    }
+
+    #[must_use]
+    pub fn height(&self, sq: Square) -> u8 {
+        self.heights[sq.to_index()]
+    }
+
+    #[must_use]
+    pub fn all_royals(&self) -> Bitboard {
+        self.tops[PieceType::Wall.to_index()] | self.tops[PieceType::Cap.to_index()]
     }
 }
