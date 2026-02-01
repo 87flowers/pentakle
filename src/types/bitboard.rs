@@ -7,11 +7,11 @@ pub struct Bitboard(pub u64);
 impl Bitboard {
     pub const MASK: Self = Self(0xFFFFFFFFF);
 
-    pub fn rank_mask(rank: usize) -> Bitboard {
+    pub const fn rank_mask(rank: usize) -> Bitboard {
         Bitboard(0b000000_000000_000000_000000_000000_111111 << (rank * 6))
     }
 
-    pub fn file_mask(file: usize) -> Bitboard {
+    pub const fn file_mask(file: usize) -> Bitboard {
         Bitboard(0b000001_000001_000001_000001_000001_000001 << file)
     }
 
@@ -120,5 +120,21 @@ impl std::ops::Sub for Bitboard {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Bitboard(self.0 - rhs.0) & Bitboard::MASK
+    }
+}
+
+impl std::ops::Shr<usize> for Bitboard {
+    type Output = Bitboard;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        Bitboard(self.0 >> rhs)
+    }
+}
+
+impl std::ops::Shl<usize> for Bitboard {
+    type Output = Bitboard;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        Bitboard(self.0 << rhs) & Bitboard::MASK
     }
 }

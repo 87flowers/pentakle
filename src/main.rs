@@ -1,4 +1,5 @@
 #![feature(iter_next_chunk)]
+#![feature(portable_simd)]
 #![feature(uint_bit_width)]
 
 mod perft;

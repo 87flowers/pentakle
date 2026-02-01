@@ -2,6 +2,7 @@ use crate::types::{Bitboard, Color, Piece, PieceType, Square};
 
 mod make_move;
 mod movegen;
+mod road;
 mod tps;
 
 pub use movegen::MoveList;
@@ -60,7 +61,22 @@ impl Position {
     }
 
     #[must_use]
+    pub fn color(&self, c: Color) -> Bitboard {
+        self.colors[c.to_index()]
+    }
+
+    #[must_use]
     pub fn all_royals(&self) -> Bitboard {
         self.tops[PieceType::Wall.to_index()] | self.tops[PieceType::Cap.to_index()]
+    }
+
+    #[must_use]
+    pub fn all_roads(&self) -> Bitboard {
+        self.tops[PieceType::Flat.to_index()] | self.tops[PieceType::Cap.to_index()]
+    }
+
+    #[must_use]
+    pub fn roads(&self, c: Color) -> Bitboard {
+        self.all_roads() & self.color(c)
     }
 }
