@@ -30,8 +30,8 @@ impl Position {
             pos.tops[pt.to_index()] |= bit;
 
             let remaining = match mv.piece_type() {
-                PieceType::Flat | PieceType::Wall => &mut pos.remaining_stones[pos.stm.to_index()],
-                PieceType::Cap => &mut pos.remaining_caps[pos.stm.to_index()],
+                PieceType::Flat | PieceType::Wall => &mut pos.remaining_stones[stm.to_index()],
+                PieceType::Cap => &mut pos.remaining_caps[stm.to_index()],
                 _ => unreachable!("Invalid piece to place"),
             };
             *remaining -= 1;
@@ -68,7 +68,7 @@ impl Position {
                 curr = curr.step(dir);
 
                 let drop_size = splat.trailing_zeros() + 1;
-                let drop_colors = (hand_colors >> (hand_height - drop_size)) & ones(hand_height);
+                let drop_colors = (hand_colors >> (hand_height - drop_size)) & ones(drop_size);
                 let drop_top_color = Color::from_index((drop_colors & 1) as u8);
 
                 pos.heights[curr.to_index()] += drop_size as u8;
@@ -103,7 +103,8 @@ impl Position {
     pub fn verify(&self) {
         for i in 0..Square::NUM {
             let sq = Square::new(i as u8);
-            if self.heights[i] == 0 {
+            let height = self.heights[i];
+            if height == 0 {
                 assert_eq!(self.stacks[i], 0);
                 assert_eq!(self.mailbox[i], Piece::None);
                 for c in self.colors {
@@ -113,6 +114,7 @@ impl Position {
                     assert!(!t.get(sq));
                 }
             } else {
+                assert_eq!(self.stacks[i], self.stacks[i] & ones(height as u32));
                 let top_color = Color::from_index((self.stacks[i] & 1) as u8);
                 let top = self.mailbox[i];
                 assert_eq!(top.color(), top_color);
@@ -138,6 +140,27 @@ impl Position {
                 }
             }
         }
+
+        let board_count: u8 = self.heights.iter().sum();
+        let p2_count: u8 = self.stacks.iter().map(|x| x.count_ones() as u8).sum();
+        let p1_count = board_count - p2_count;
+
+        assert_eq!(
+            p1_count + self.remaining_stones[0] + self.remaining_caps[0],
+            Position::STARTING_STONES + Position::STARTING_CAPS
+        );
+        assert_eq!(
+            p2_count + self.remaining_stones[1] + self.remaining_caps[1],
+            Position::STARTING_STONES + Position::STARTING_CAPS
+        );
+        assert_eq!(
+            self.caps(Color::P1).count_ones() as u8 + self.remaining_caps[0],
+            Position::STARTING_CAPS
+        );
+        assert_eq!(
+            self.caps(Color::P2).count_ones() as u8 + self.remaining_caps[1],
+            Position::STARTING_CAPS
+        );
     }
 }
 

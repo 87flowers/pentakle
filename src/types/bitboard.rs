@@ -39,6 +39,11 @@ impl Bitboard {
     }
 
     #[must_use]
+    pub fn count_ones(self) -> u32 {
+        self.0.count_ones()
+    }
+
+    #[must_use]
     pub fn lsb(self) -> Square {
         if self.is_empty() {
             Square::None

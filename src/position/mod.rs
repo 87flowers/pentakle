@@ -66,13 +66,38 @@ impl Position {
     }
 
     #[must_use]
+    pub fn all_flats(&self) -> Bitboard {
+        self.tops[PieceType::Flat.to_index()]
+    }
+
+    #[must_use]
+    pub fn all_walls(&self) -> Bitboard {
+        self.tops[PieceType::Wall.to_index()]
+    }
+
+    #[must_use]
+    pub fn all_caps(&self) -> Bitboard {
+        self.tops[PieceType::Cap.to_index()]
+    }
+
+    #[must_use]
     pub fn all_royals(&self) -> Bitboard {
-        self.tops[PieceType::Wall.to_index()] | self.tops[PieceType::Cap.to_index()]
+        self.all_walls() | self.all_caps()
     }
 
     #[must_use]
     pub fn all_roads(&self) -> Bitboard {
-        self.tops[PieceType::Flat.to_index()] | self.tops[PieceType::Cap.to_index()]
+        self.all_flats() | self.all_caps()
+    }
+
+    #[must_use]
+    pub fn flats(&self, c: Color) -> Bitboard {
+        self.all_flats() & self.color(c)
+    }
+
+    #[must_use]
+    pub fn caps(&self, c: Color) -> Bitboard {
+        self.all_caps() & self.color(c)
     }
 
     #[must_use]

@@ -20,6 +20,7 @@ impl Interface {
             "position" => self.parse_position(it),
             "moves" => self.parse_moves(it),
             "perft" => self.parse_perft(it),
+            "d" => println!("{}", self.position),
             _ => self.print_protocol_error(cmd, "Unknown command"),
         }
     }

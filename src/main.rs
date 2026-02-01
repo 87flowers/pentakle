@@ -7,6 +7,8 @@ mod position;
 mod tei;
 mod types;
 
+pub const KOMI: u32 = 2;
+
 fn main() {
     let mut interface = tei::Interface::default();
 
