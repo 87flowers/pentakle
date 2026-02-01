@@ -10,6 +10,7 @@ pub enum PieceType {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, Default)]
+#[allow(dead_code)]
 pub enum Piece {
     P1Flat,
     P2Flat,
@@ -76,7 +77,7 @@ impl Piece {
 
     #[must_use]
     pub fn is_none(&self) -> bool {
-        *self == Piece::None
+        !self.is_some()
     }
 
     #[must_use]

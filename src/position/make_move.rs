@@ -13,21 +13,21 @@ impl Position {
 
         let stm = if pos.ply < 2 { !pos.stm } else { pos.stm };
 
-        let sq = mv.sq().to_index();
-        let bit = mv.sq().to_bitboard();
+        let sq = mv.sq();
+        let i = sq.to_index();
 
         if mv.is_place() {
             let pt = mv.piece_type();
 
-            debug_assert!(pos.heights[sq] == 0);
-            debug_assert!(pos.mailbox[sq].is_none());
+            debug_assert!(pos.heights[i] == 0);
+            debug_assert!(pos.mailbox[i].is_none());
 
-            pos.heights[sq] = 1;
-            pos.stacks[sq] = stm.to_index() as u64;
-            pos.mailbox[sq] = Piece::new(stm, pt);
+            pos.heights[i] = 1;
+            pos.stacks[i] = stm.to_index() as u64;
+            pos.mailbox[i] = Piece::new(stm, pt);
 
-            pos.colors[stm.to_index()] |= bit;
-            pos.tops[pt.to_index()] |= bit;
+            pos.colors[stm.to_index()].set(sq);
+            pos.tops[pt.to_index()].set(sq);
 
             let remaining = match mv.piece_type() {
                 PieceType::Flat | PieceType::Wall => &mut pos.remaining_stones[stm.to_index()],
@@ -40,23 +40,23 @@ impl Position {
 
             let mut splat = mv.splat();
             let mut hand_height = splat.bit_width();
-            let hand_colors = pos.stacks[sq] & ones(hand_height);
-            let top = pos.mailbox[sq];
+            let hand_colors = pos.stacks[i] & ones(hand_height);
+            let top = pos.mailbox[i];
 
-            pos.stacks[sq] >>= hand_height;
-            pos.heights[sq] -= hand_height as u8;
-            pos.mailbox[sq] = if pos.heights[sq] == 0 {
-                pos.colors[top.color().to_index()] &= !bit;
-                pos.tops[top.piece_type().to_index()] &= !bit;
+            pos.stacks[i] >>= hand_height;
+            pos.heights[i] -= hand_height as u8;
+            pos.mailbox[i] = if pos.heights[i] == 0 {
+                pos.colors[top.color().to_index()].unset(sq);
+                pos.tops[top.piece_type().to_index()].unset(sq);
 
                 Piece::None
             } else {
-                pos.colors[top.color().to_index()] &= !bit;
-                pos.tops[top.piece_type().to_index()] &= !bit;
+                pos.colors[top.color().to_index()].unset(sq);
+                pos.tops[top.piece_type().to_index()].unset(sq);
 
-                let color = Color::from_index((pos.stacks[sq] & 1) as u8);
-                pos.colors[color.to_index()] |= bit;
-                pos.tops[PieceType::Flat.to_index()] |= bit;
+                let color = Color::from_index((pos.stacks[i] & 1) as u8);
+                pos.colors[color.to_index()].set(sq);
+                pos.tops[PieceType::Flat.to_index()].set(sq);
 
                 Piece::new(color, PieceType::Flat)
             };
@@ -75,20 +75,20 @@ impl Position {
                 pos.stacks[curr.to_index()] <<= drop_size;
                 pos.stacks[curr.to_index()] |= drop_colors;
                 pos.mailbox[curr.to_index()] = Piece::new(drop_top_color, PieceType::Flat);
-                pos.colors[drop_top_color.to_index()] |= curr.to_bitboard();
-                pos.colors[(!drop_top_color).to_index()] &= !curr.to_bitboard();
-                pos.tops[PieceType::Flat.to_index()] |= curr.to_bitboard();
+                pos.colors[drop_top_color.to_index()].set(curr);
+                pos.colors[(!drop_top_color).to_index()].unset(curr);
+                pos.tops[PieceType::Flat.to_index()].set(curr);
 
                 splat >>= drop_size;
                 hand_height -= drop_size;
             }
 
             if top.piece_type() != PieceType::Flat {
-                pos.tops[PieceType::Flat.to_index()] &= !curr.to_bitboard();
-                pos.tops[PieceType::Wall.to_index()] &= !curr.to_bitboard();
-                pos.tops[PieceType::Cap.to_index()] &= !curr.to_bitboard();
+                pos.tops[PieceType::Flat.to_index()].unset(curr);
+                pos.tops[PieceType::Wall.to_index()].unset(curr);
+                pos.tops[PieceType::Cap.to_index()].unset(curr);
 
-                pos.tops[top.piece_type().to_index()] |= curr.to_bitboard();
+                pos.tops[top.piece_type().to_index()].set(curr);
 
                 pos.mailbox[curr.to_index()] = top;
             }
@@ -121,7 +121,7 @@ impl Position {
                 assert!(self.colors[top_color.to_index()].get(sq));
                 assert!(!self.colors[(!top_color).to_index()].get(sq));
                 match top.piece_type() {
-                    PieceType::None => assert!(false),
+                    PieceType::None => panic!(),
                     PieceType::Flat => {
                         assert!(self.tops[PieceType::Flat.to_index()].get(sq));
                         assert!(!self.tops[PieceType::Wall.to_index()].get(sq));
@@ -171,10 +171,8 @@ mod tests {
 
     #[test]
     fn make_move() {
-        let position = Position::from_str(
-            "x6/2C,1,1,1,1,1/2,x,111121S,x3/2,x,11,x,1,x/2,1C,12,2,2,2/x,112,x4 2 22",
-        )
-        .unwrap();
+        let position =
+            Position::from_str("x6/2C,1,1,1,1,1/2,x,111121S,x3/2,x,11,x,1,x/2,1C,12,2,2,2/x,112,x4 2 22").unwrap();
 
         let mv = Move::from_str("3b1>12").unwrap();
         let expected = "x6/2C,1,1,1,1,1/2,x,111121S,x3/2,x,11,x,1,x/2,1C,12,2,2,2/x2,1,12,x2 1 23";

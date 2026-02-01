@@ -179,7 +179,7 @@ impl FromStr for Move {
             return Ok(Move::spread(sq, dir, splat));
         }
 
-        while let Some(ch) = it.next() {
+        for ch in it {
             if !('1'..='6').contains(&ch) {
                 return Err(MoveParseError::InvalidTrailingCharacter);
             }
@@ -238,9 +238,7 @@ mod tests {
 
     #[test]
     fn roundtrip_moves() {
-        let cases = [
-            "a1", "Cb4", "Sd3", "a1>", "d1-", "4c3>", "3b2+111", "5e4<23", "5b4>212",
-        ];
+        let cases = ["a1", "Cb4", "Sd3", "a1>", "d1-", "4c3>", "3b2+111", "5e4<23", "5b4>212"];
 
         for case in cases {
             let mv = Move::from_str(case).unwrap();

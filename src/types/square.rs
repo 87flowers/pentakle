@@ -5,6 +5,7 @@ use thiserror::Error;
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 #[repr(u8)]
 #[rustfmt::skip]
+#[allow(dead_code)]
 pub enum Square {
     A1, B1, C1, D1, E1, F1,
     A2, B2, C2, D2, E2, F2,
@@ -85,7 +86,7 @@ impl Square {
 #[derive(Error, Debug)]
 pub enum SquareParseError {
     #[error("invalid length of square specifier")]
-    InvalidLength,
+    IncorrectLength,
     #[error("invalid file in square specifier")]
     InvalidFile,
     #[error("invalid rank in square specifier")]
@@ -97,7 +98,7 @@ impl FromStr for Square {
 
     fn from_str(s: &str) -> Result<Square, SquareParseError> {
         let [file, rank] = s.as_bytes() else {
-            return Err(SquareParseError::InvalidLength);
+            return Err(SquareParseError::IncorrectLength);
         };
 
         let file = if (b'a'..=b'f').contains(file) {
@@ -118,11 +119,6 @@ impl FromStr for Square {
 impl std::fmt::Display for Square {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (file, rank) = self.to_file_and_rank();
-        write!(
-            f,
-            "{}{}",
-            (b'a' + file as u8) as char,
-            (b'1' + rank as u8) as char
-        )
+        write!(f, "{}{}", (b'a' + file as u8) as char, (b'1' + rank as u8) as char)
     }
 }
